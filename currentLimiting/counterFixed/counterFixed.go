@@ -34,14 +34,19 @@ func newCounterFixed() *counterFixed {
 
 // Add 添加
 func (cf *counterFixed) Add(sign string, interval time.Duration, total uint32) {
-	e := &engine{interval: interval, total: total}
-	go e.timer()
-	cf.signs[sign] = e
+	if _, ok := cf.signs[sign]; !ok {
+		e := &engine{interval: interval, total: total}
+		go e.timer()
+		cf.signs[sign] = e
+	}
 }
 
 // Check 验证
 func (cf *counterFixed) Check(sign string) bool {
-	e := cf.signs[sign]
+	e, ok := cf.signs[sign]
+	if !ok {
+		return false
+	}
 	useTotal := e.useTotal
 	if useTotal == e.total {
 		return false
